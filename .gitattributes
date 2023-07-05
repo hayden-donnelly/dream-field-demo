@@ -1,4 +1,6 @@
-*.* linguist-language=cs
+## Linguist ##
+* linguist-detectable=false
+*.cs linguist-detectable=true
 
 ## Unity ##
 
