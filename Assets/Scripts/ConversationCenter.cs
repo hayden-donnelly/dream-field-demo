@@ -28,20 +28,13 @@ public class ConversationCenter : MonoBehaviour
         {
             await customTTS.Speak(testText, voice, audioSource);
         }
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetKeyDown(KeyCode.Space) && !speechRecognition.IsRecording)
         {
-            if(!speechRecognition.IsRecording)
-            {
-                speechRecognition.StartRecording();
-            }
-            else
-            {
-                speechRecognition.EndRecording();
-            }
+            speechRecognition.StartRecording();
         }
-
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(Input.GetKeyUp(KeyCode.Space) && speechRecognition.IsRecording)
         {
+            speechRecognition.EndRecording();
             await TranscribeAndReply();
         }
     }
