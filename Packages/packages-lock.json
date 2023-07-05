@@ -10,6 +10,12 @@
       },
       "hash": "16bff49a84e5707e03a84b15ae3172def10f8619"
     },
+    "com.lmnt.unity": {
+      "version": "file:com.lmnt.unity",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.srcnalt.openai-unity": {
       "version": "https://github.com/srcnalt/OpenAI-Unity.git",
       "depth": 0,
