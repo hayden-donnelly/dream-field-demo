@@ -141,7 +141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &487265802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,6 +207,8 @@ GameObject:
   - component: {fileID: 1083586053}
   - component: {fileID: 1083586054}
   - component: {fileID: 1083586055}
+  - component: {fileID: 1083586057}
+  - component: {fileID: 1083586056}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -337,6 +339,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497fc7497e022f547b44bfc49f43c595, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  testText: test test test
+  audioSource: {fileID: 1083586054}
+  speech: {fileID: 1083586057}
+--- !u!114 &1083586056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1083586051}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7107030db8fd0084391288e9b78547ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speech: {fileID: 1083586057}
+--- !u!114 &1083586057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1083586051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b40e181ef7f384f5e895d4dc3eee0702, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voice: Olivia
+  dialogue: Hello world!
 --- !u!1 &1164262934
 GameObject:
   m_ObjectHideFlags: 0

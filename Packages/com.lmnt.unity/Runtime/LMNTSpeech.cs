@@ -32,6 +32,7 @@ public class LMNTSpeech : MonoBehaviour {
     WWWForm form = new WWWForm();
     form.AddField("voice", LookupByName(voice));
     form.AddField("text", dialogue);
+    Debug.Log(dialogue);
     using (UnityWebRequest request = UnityWebRequest.Post(Constants.LMNT_SYNTHESIZE_URL, form)) {
       _handler = new DownloadHandlerAudioClip(Constants.LMNT_SYNTHESIZE_URL, AudioType.WAV);
       request.SetRequestHeader("X-API-Key", _apiKey);
