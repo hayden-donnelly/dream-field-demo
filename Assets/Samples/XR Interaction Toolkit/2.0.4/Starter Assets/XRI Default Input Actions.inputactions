@@ -278,6 +278,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Face Button A",
+                    "type": "Button",
+                    "id": "60336eb2-4554-4138-97e4-6700d12a9857",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Face Button B",
+                    "type": "Button",
+                    "id": "904df6ef-cb52-4129-bc77-31ff2247df44",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -456,6 +474,28 @@
                     "action": "Translate Anchor",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "438ee5f5-1d05-43c8-93bc-80dfa255afdf",
+                    "path": "<XRController>{LeftHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Face Button A",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fa91d0ad-58fe-4f38-a54b-0394b87370fd",
+                    "path": "<XRController>{LeftHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Face Button B",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -796,6 +836,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Face Button A",
+                    "type": "Button",
+                    "id": "10f7bbf6-bc27-4926-9ba0-e893584845a8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Face Button B",
+                    "type": "Button",
+                    "id": "7336fc27-09b3-4e1b-84e9-4015eb097bde",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -974,6 +1032,28 @@
                     "action": "Translate Anchor",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "9e35cb0a-5105-4118-83dd-0a9d538880df",
+                    "path": "<XRController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Face Button A",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fdc0490c-66b3-4760-b69a-63cb1e08ad2d",
+                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Face Button B",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

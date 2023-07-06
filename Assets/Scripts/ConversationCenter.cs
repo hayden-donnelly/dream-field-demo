@@ -6,6 +6,7 @@ using LMNT;
 
 public class ConversationCenter : MonoBehaviour
 {
+    [SerializeField] private GameObject recordingNotification;
     [SerializeField] private string voice = "Olivia";
     [SerializeField] private string testText = "test test test";
     [SerializeField] private AudioSource audioSource;
@@ -30,13 +31,32 @@ public class ConversationCenter : MonoBehaviour
         }
         if(Input.GetKeyDown(KeyCode.Space) && !speechRecognition.IsRecording)
         {
-            speechRecognition.StartRecording();
+            StartRecording();
         }
         if(Input.GetKeyUp(KeyCode.Space) && speechRecognition.IsRecording)
         {
-            speechRecognition.EndRecording();
-            await TranscribeAndReply();
+            StopRecording();
         }
+    }
+
+    public void StartRecording()
+    {
+        if(speechRecognition.IsRecording) { return; }
+        recordingNotification.SetActive(true);
+        speechRecognition.StartRecording();
+    }
+
+    public async void StopRecording()
+    {
+        if(!speechRecognition.IsRecording) { return; }
+        recordingNotification.SetActive(false);
+        speechRecognition.EndRecording();
+        await TranscribeAndReply();   
+    }
+
+    public void InterruptSpeaker()
+    {
+        Debug.Log("Intterupt not implemented yet");
     }
 
     private async Task TranscribeAndReply()
