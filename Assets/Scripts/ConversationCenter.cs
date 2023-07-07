@@ -2,6 +2,7 @@ using UnityEngine;
 using OpenAI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using LMNT;
 
 public class ConversationCenter : MonoBehaviour
@@ -82,9 +83,24 @@ public class ConversationCenter : MonoBehaviour
     private async Task TestPrompt()
     {
         //string response = await GetReply("Hey, please come over here.");
-        //string response = await GetReply("Please teleport me to the bowling alley.");
-        string response = await GetReply("Please wait where you are.");
+        string response = await GetReply("Please teleport me to the bowling alley.");
+        //string response = await GetReply("Please wait where you are.");
+        //string response = await GetReply("How are you today?");
+        (int, string) parsedResponse = ParseForSpecialTask(response);
+        Debug.Log("Special task identifier: " + parsedResponse.Item1);
+        Debug.Log("Response: " + parsedResponse.Item2);
         Debug.Log(response);
+    }
+
+    private (int, string) ParseForSpecialTask(string response)
+    {
+        string specialTaskIdentifierString = response.Substring(0, 1);
+        int specialTaskIdentifier = -1;
+        if(int.TryParse(specialTaskIdentifierString, out specialTaskIdentifier))
+        {
+            response = response.Substring(2);
+        }
+        return (specialTaskIdentifier, response);
     }
 
     private async Task<string> GetReply(string inputText)
