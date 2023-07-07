@@ -15,12 +15,23 @@ public class ConversationCenter : MonoBehaviour
     private CustomTTS customTTS;
     private List<ChatMessage> messages = new List<ChatMessage>();
     private string prompt = 
-        @"Act as a random stranger in a chat room and reply to the questions. 
-        Don't break character. Don't ever mention that you are an AI model.";
+        @"You are an assistant inside of a virtual reality game. You have the ability to move 
+        around and interact with objects within this game. Your goal is to aid and entertain 
+        the user. The user may ask you to complete anyone of the following special tasks:
+        1. Move to their location
+        2. Stay where you are
+        3. Teleport them to a new location
+        If the user asks you to complete one of these tasks, you should begin your response 
+        with the number of the special task that you are completing, and then continue the 
+        rest of your response. For example, if the user says 'come here please', this means 
+        they are asking you to move to their location, so your response should look like 
+        '1 Okay on my way!' If the user is not asking you to complete one of the special 
+        tasks, you should respond normally.";
 
     private void Start()
     {
         customTTS = new CustomTTS();
+        TestPrompt();
     }
 
     private async void Update()
@@ -67,10 +78,19 @@ public class ConversationCenter : MonoBehaviour
         Debug.Log(reply);
         await customTTS.Speak(reply, voice, audioSource);
     }
-    
+
+    private async Task TestPrompt()
+    {
+        //string response = await GetReply("Hey, please come over here.");
+        //string response = await GetReply("Please teleport me to the bowling alley.");
+        string response = await GetReply("Please wait where you are.");
+        Debug.Log(response);
+    }
+
     private async Task<string> GetReply(string inputText)
     {
         var newMessage = new ChatMessage() { Role = "user", Content = inputText };
+        if(messages.Count == 0) { newMessage.Content = prompt + "\n" + inputText; }
         messages.Add(newMessage);
         
         var completionResponse = 
