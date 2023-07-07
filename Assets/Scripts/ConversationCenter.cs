@@ -2,15 +2,16 @@ using UnityEngine;
 using OpenAI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using LMNT;
+using UnityEngine.AI;
 
 public class ConversationCenter : MonoBehaviour
 {
+    [SerializeField] private Transform userTransform;
     [SerializeField] private GameObject recordingNotification;
     [SerializeField] private string voice = "Olivia";
     [SerializeField] private string testText = "test test test";
     [SerializeField] private AudioSource audioSource;
+    private NavMeshAgent navMeshAgent;
     private OpenAIApi openai = new OpenAIApi();
     private SpeechRecognition speechRecognition = new SpeechRecognition();
     private CustomTTS customTTS;
@@ -31,6 +32,7 @@ public class ConversationCenter : MonoBehaviour
 
     private void Start()
     {
+        navMeshAgent = GetComponent<NavMeshAgent>();
         customTTS = new CustomTTS();
         TestPrompt();
     }
@@ -75,21 +77,46 @@ public class ConversationCenter : MonoBehaviour
     {
         string transcription = await speechRecognition.GetTranscription();
         Debug.Log(transcription);
-        string reply = await GetReply(transcription);
-        Debug.Log(reply);
-        await customTTS.Speak(reply, voice, audioSource);
+        string response = await GetReply(transcription);
+        (int, string) parsedResponse = ParseForSpecialTask(response);
+        Debug.Log(parsedResponse.Item2);
+        await customTTS.Speak(response, voice, audioSource);
+    }
+
+    private void ExecuteSpecialTask(int specialTaskIdentifier)
+    {
+        if(specialTaskIdentifier == 0) { return; }
+        switch(specialTaskIdentifier)
+        {
+            case 1:
+                navMeshAgent.SetDestination(userTransform.position);
+                break;
+            case 2:
+                navMeshAgent.SetDestination(transform.position);
+                break;
+            case 3:
+                Debug.Log("Teleport not implemented yet");
+                break;
+            default:
+                Debug.Log("Invalid special task identifier");
+                break;
+        }
     }
 
     private async Task TestPrompt()
     {
-        //string response = await GetReply("Hey, please come over here.");
-        string response = await GetReply("Please teleport me to the bowling alley.");
+        string response = await GetReply("Hey, please come over here.");
+        //string response = await GetReply("Please teleport me to the bowling alley.");
         //string response = await GetReply("Please wait where you are.");
         //string response = await GetReply("How are you today?");
         (int, string) parsedResponse = ParseForSpecialTask(response);
         Debug.Log("Special task identifier: " + parsedResponse.Item1);
         Debug.Log("Response: " + parsedResponse.Item2);
         Debug.Log(response);
+        if(parsedResponse.Item1 == 1)
+        {
+            navMeshAgent.SetDestination(userTransform.position);
+        }
     }
 
     private (int, string) ParseForSpecialTask(string response)
