@@ -6,8 +6,9 @@ using UnityEngine.AI;
 
 public class ConversationCenter : MonoBehaviour
 {
+    [SerializeField] private SceneLoader sceneLoader;
     private bool isFollowing = false;
-    [SerializeField] private float followDistance = 2f;
+    [SerializeField] private float followDistance = 5f;
     [SerializeField] private Transform userTransform;
     [SerializeField] private GameObject recordingNotification;
     [SerializeField] private string voice = "Olivia";
@@ -24,23 +25,35 @@ public class ConversationCenter : MonoBehaviour
         the user. The user may ask you to complete anyone of the following special tasks:
         1. Move to their location
         2. Stay where you are
-        3. Teleport them to a new location
+        3. Teleport them to a location
         If the user asks you to complete one of these tasks, you should begin your response 
         with the number of the special task that you are completing, and then continue the 
         rest of your response. For example, if the user says 'come here please', this means 
         they are asking you to move to their location, so your response should look like 
         '1 Okay on my way!' If the user is not asking you to complete one of the special 
-        tasks, you should respond normally.";
+        tasks, you should respond normally.
+        There are two locations that you can teleport the user to.
+        1. Space
+        2. The lobby
+        If the user asks you to teleport them to one of these locations, you should begin
+        your response with 3 because that is the number of the special task they're asking you
+        to complete, following this you should say the number of the location you are 
+        teleporting them to, then continue with the rest of your response. 
+        For example, if the user says 'teleport me to space', your response should look like
+        '3 1 Okay, teleporting you to space. Hold on tight!'";
 
     private void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         customTTS = new CustomTTS();
-        TestPrompt();
     }
 
     private async void Update()
     {
+        if(userTransform == null)
+        {
+            userTransform = GameObject.FindGameObjectWithTag("PlayerOrigin").transform;
+        }
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             await customTTS.Speak(testText, voice, audioSource);
@@ -58,6 +71,10 @@ public class ConversationCenter : MonoBehaviour
         if(isFollowing && distanceFromUser > followDistance)
         {
             navMeshAgent.SetDestination(userTransform.position);
+        }
+        else if(isFollowing && distanceFromUser <= followDistance)
+        {
+            navMeshAgent.SetDestination(transform.position);
         }
     }
 
@@ -86,14 +103,16 @@ public class ConversationCenter : MonoBehaviour
         string transcription = await speechRecognition.GetTranscription();
         Debug.Log(transcription);
         string response = await GetReply(transcription);
+        if(response == "") { return; }
         (int, string) parsedResponse = ParseForSpecialTask(response);
+        response = ExecuteSpecialTask(parsedResponse.Item1, parsedResponse.Item2);
         Debug.Log(parsedResponse.Item2);
         await customTTS.Speak(response, voice, audioSource);
     }
 
-    private void ExecuteSpecialTask(int specialTaskIdentifier)
+    private string ExecuteSpecialTask(int specialTaskIdentifier, string response)
     {
-        if(specialTaskIdentifier == 0) { return; }
+        if(specialTaskIdentifier == 0) { return response; }
         switch(specialTaskIdentifier)
         {
             case 1:
@@ -102,15 +121,28 @@ public class ConversationCenter : MonoBehaviour
                 break;
             case 2:
                 isFollowing = false;
-                //navMeshAgent.SetDestination(transform.position);
+                navMeshAgent.SetDestination(transform.position);
                 break;
             case 3:
-                Debug.Log("Teleport not implemented yet");
+                (int, string) parsedResponse = ParseForSpecialTask(response);
+                if(parsedResponse.Item1 == 1)
+                {
+                    sceneLoader.LoadScene("Space");
+                    userTransform.position = Vector3.zero;
+                    return parsedResponse.Item2;
+                }
+                else if(parsedResponse.Item1 == 2)
+                {
+                    sceneLoader.LoadScene("SampleScene2");
+                    userTransform.position = Vector3.zero;
+                    return parsedResponse.Item2;
+                }
                 break;
             default:
                 Debug.Log("Invalid special task identifier");
                 break;
         }
+        return response;
     }
 
     private async Task TestPrompt()
