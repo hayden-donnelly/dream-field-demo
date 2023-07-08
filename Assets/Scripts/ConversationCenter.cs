@@ -6,6 +6,8 @@ using UnityEngine.AI;
 
 public class ConversationCenter : MonoBehaviour
 {
+    private bool isFollowing = false;
+    [SerializeField] private float followDistance = 2f;
     [SerializeField] private Transform userTransform;
     [SerializeField] private GameObject recordingNotification;
     [SerializeField] private string voice = "Olivia";
@@ -51,6 +53,12 @@ public class ConversationCenter : MonoBehaviour
         {
             StopRecording();
         }
+
+        float distanceFromUser = Vector3.Distance(transform.position, userTransform.position);
+        if(isFollowing && distanceFromUser > followDistance)
+        {
+            navMeshAgent.SetDestination(userTransform.position);
+        }
     }
 
     public void StartRecording()
@@ -89,10 +97,12 @@ public class ConversationCenter : MonoBehaviour
         switch(specialTaskIdentifier)
         {
             case 1:
-                navMeshAgent.SetDestination(userTransform.position);
+                isFollowing = true;
+                //navMeshAgent.SetDestination(userTransform.position);
                 break;
             case 2:
-                navMeshAgent.SetDestination(transform.position);
+                isFollowing = false;
+                //navMeshAgent.SetDestination(transform.position);
                 break;
             case 3:
                 Debug.Log("Teleport not implemented yet");
