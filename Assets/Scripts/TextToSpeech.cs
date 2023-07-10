@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using LMNT;
 using UnityEngine.Networking;
 
-public class CustomTTS
+public class TextToSpeech
 {
     private List<Voice> voiceList;
     private string apiKey;
 
-    public CustomTTS()
+    public TextToSpeech()
     {
         apiKey = LMNTLoader.LoadApiKey();
         voiceList = LMNTLoader.LoadVoices();

@@ -17,7 +17,7 @@ public class ConversationCenter : MonoBehaviour
     private NavMeshAgent navMeshAgent;
     private OpenAIApi openai = new OpenAIApi();
     private SpeechRecognition speechRecognition = new SpeechRecognition();
-    private CustomTTS customTTS;
+    private TextToSpeech customTTS;
     private List<ChatMessage> messages = new List<ChatMessage>();
     private string prompt = 
         @"You are an assistant inside of a virtual reality game. You have the ability to move 
@@ -45,7 +45,7 @@ public class ConversationCenter : MonoBehaviour
     private void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
-        customTTS = new CustomTTS();
+        customTTS = new TextToSpeech();
     }
 
     private async void Update()

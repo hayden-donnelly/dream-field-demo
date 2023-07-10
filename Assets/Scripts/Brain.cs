@@ -4,19 +4,17 @@ using System.Threading.Tasks;
 using OpenAI;
 using UnityEngine.SceneManagement;
 
-public class NewConversationCenter
+public class Brain
 {
     private OpenAIApi openai;
     private Prompts prompts;
-    private CustomTTS customTTS;
     private List<ChatMessage> conversationHistory;
     private Dictionary<int, string> sceneNames;
 
-    public NewConversationCenter()
+    public Brain()
     {
         openai = new OpenAIApi();
         prompts = new Prompts();
-        customTTS = new CustomTTS();
         InitializeConversationHistory();
         sceneNames = new Dictionary<int, string>()
         {
@@ -109,7 +107,7 @@ public class NewConversationCenter
         }
     }
 
-    public async Task TranscribeAndReply(string text)
+    public async Task<string> ThinkAndReply(string text)
     {
         int specialTaskID = await ParseForSpecialTask(text, prompts.SpecialTaskPrompt);
         Debug.Log("Special task identifier: " + specialTaskID);
@@ -118,5 +116,6 @@ public class NewConversationCenter
         Debug.Log("Context: " + context);
         string responseText = await GetReply(text, context);
         Debug.Log("Response: " + responseText);
+        return responseText;
     }
 }

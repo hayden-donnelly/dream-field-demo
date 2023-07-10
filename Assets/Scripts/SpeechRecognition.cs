@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.IO;
-//using HuggingFace.API;
 using System.Threading.Tasks;
 using OpenAI;
 
@@ -29,18 +28,6 @@ public class SpeechRecognition
         bytes = EncodeAsWAV(samples, clip.frequency, clip.channels);
         IsRecording = false;
     }
-
-    /*public string GetTranscription()
-    {
-        string apiResponse = "";
-        HuggingFaceAPI.AutomaticSpeechRecognition(bytes, response => {
-            apiResponse = response;
-        }, error => { 
-            Debug.Log(error); 
-            apiResponse = error;
-        });
-        return apiResponse;
-    }*/
 
     public async Task<string> GetTranscription()
     {
