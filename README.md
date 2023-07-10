@@ -8,8 +8,8 @@ AI and virtual reality will revolutionize education as we know it. Dream Field s
 ### 2. Communication
 Large language models are impressive, but they are stuck inside a chat box that limits our ability to communicate with them. To get the most out of AI, we must open channels for non-verbal communication. Dream Field enables this by creating virtual worlds where both humans and AI are embodied. When you look at something in Dream Field, the AI will know what you're looking at. When you move your hands to exagerate a point, the AI will understand. This is the future of human-AI communication.
 
-### 3. Production
-Education and communication set the stage for our most important objective: production. By providing these pillars, Dream Field aims to accelerate technological innovation and scientific discovery. By working inside Dream Field, we will be able to understand problems in a whole new light and iterate on solutions faster than ever before.
+### 3. Productivity
+Education and communication set the stage for our most important objective: productivity. By providing these pillars, Dream Field aims to accelerate technological innovation and scientific discovery. By working inside Dream Field, we will be able to understand problems in a whole new light and iterate on solutions faster than ever before.
 
 ## Screenshots
 ![screenshot_01](./Images/dream-field-screenshot-01.png)
