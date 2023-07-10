@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OpenAI;
+using UnityEngine.SceneManagement;
 
 public class NewConversationCenter
 {
@@ -9,6 +10,7 @@ public class NewConversationCenter
     private Prompts prompts;
     private CustomTTS customTTS;
     private List<ChatMessage> conversationHistory;
+    private Dictionary<int, string> sceneNames;
 
     public NewConversationCenter()
     {
@@ -16,6 +18,11 @@ public class NewConversationCenter
         prompts = new Prompts();
         customTTS = new CustomTTS();
         InitializeConversationHistory();
+        sceneNames = new Dictionary<int, string>()
+        {
+            { 1, "Space" },
+            { 2, "SampleScene2" }
+        };
     }
 
     public void InitializeConversationHistory()
@@ -69,9 +76,9 @@ public class NewConversationCenter
         return responseText;
     }
 
-    public async Task<int> ParseForSpecialTask(string text)
+    public async Task<int> ParseForSpecialTask(string text, string prompt)
     {
-        string responseText = await QueryDomainExpert(text, prompts.SpecialTaskPrompt);
+        string responseText = await QueryDomainExpert(text, prompt);
         int specialTaskID = 0;
         int.TryParse(responseText, out specialTaskID);
         return specialTaskID;
@@ -84,10 +91,29 @@ public class NewConversationCenter
         return "CONTEXT: " + responseText;
     }
 
+    public async Task ExecuteSpecialTask(int specialTaskID, string userRequest)
+    {
+        switch(specialTaskID)
+        {
+            case 1:
+                // Follow event
+                break;
+            case 2:
+                // Stop follow event
+                break;
+            case 3:
+                int teleportationID = 
+                    await ParseForSpecialTask(userRequest, prompts.TeleportationPrompt);
+                SceneManager.LoadScene(sceneNames[teleportationID]);
+                break;
+        }
+    }
+
     public async Task TranscribeAndReply(string text)
     {
-        int specialTaskID = await ParseForSpecialTask(text);
+        int specialTaskID = await ParseForSpecialTask(text, prompts.SpecialTaskPrompt);
         Debug.Log("Special task identifier: " + specialTaskID);
+        await ExecuteSpecialTask(specialTaskID, text);
         string context = await GetContext(text);
         Debug.Log("Context: " + context);
         string responseText = await GetReply(text, context);

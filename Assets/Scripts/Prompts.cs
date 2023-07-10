@@ -28,4 +28,13 @@ public class Prompts
         following the user, staying where you are, and teleporting the user to a location
         - The two locations you can teleport the user to are space and the lobby";
     public string KnowledgeBasePrompt { get { return knowledgeBasePrompt; } }
+
+    private string teleportationPrompt = 
+        @"The user has asked you to teleport them to a location. The locations you can 
+        teleport them to are: 
+        1. Space 
+        2. The lobby 
+        Respond with the number of the location they have asked you to teleport them to. 
+        For example, if the user says 'teleport me to space', you should respond with '1'.";
+    public string TeleportationPrompt { get { return teleportationPrompt; } }
 }

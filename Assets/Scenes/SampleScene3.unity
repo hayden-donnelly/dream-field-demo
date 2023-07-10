@@ -236,7 +236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7decb31fc7e77f4479f5a0e02c2ccfa7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prompt: Please teleport me to space
+  prompt: Please teleport me to the lobby
 --- !u!4 &1547394236
 Transform:
   m_ObjectHideFlags: 0
