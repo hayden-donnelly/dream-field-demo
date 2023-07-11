@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 8828e5671d0e84550a9e0868a1b75e87
+timeCreated: 1432927185
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - FilmicVignetteShader: {fileID: 4800000, guid: f0243e6e7f79949de91634f9fdcb1f18,
+      type: 3}
+  - separableBlurShader: {fileID: 4800000, guid: e97c14fbb5ea04c3a902cc533d7fc5d1,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

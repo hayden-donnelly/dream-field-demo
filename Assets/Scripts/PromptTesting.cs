@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PromptTesting : MonoBehaviour
 {
     [SerializeField] private InputActionAsset controls;
+    [SerializeField] private EventBus eventBus;
     private Brain brain;
     private SpeechRecognition speechRecognition;
     private TextToSpeech textToSpeech;
@@ -13,8 +14,10 @@ public class PromptTesting : MonoBehaviour
 
     private void Start()
     {
+        eventBus = EventBusHelper.GetEventBus(eventBus);
         brain = new Brain();
         speechRecognition = new SpeechRecognition();
+        speechRecognition.InitializeMicrophone();
         textToSpeech = new TextToSpeech();
         audioSource = GetComponent<AudioSource>();
 
@@ -24,11 +27,13 @@ public class PromptTesting : MonoBehaviour
         recordAction.started += context => 
         {
             if(speechRecognition.IsRecording) { return; }
+            eventBus.OnRecordingStarted.Invoke();
             speechRecognition.StartRecording();
         };
         recordAction.canceled += context => 
         {
             if(!speechRecognition.IsRecording) { return; }
+            eventBus.OnRecordingEnded.Invoke();
             speechRecognition.EndRecording();
             ProcessRecording();
         };

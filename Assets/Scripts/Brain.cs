@@ -41,7 +41,8 @@ public class Brain
         conversationHistory.Add(new ChatMessage() { Role = "user", Content = text });
         var response = await openai.CreateChatCompletion(new CreateChatCompletionRequest()
         {
-            Model = "gpt-3.5-turbo-0301", 
+            //Model = "gpt-3.5-turbo-0301", 
+            Model = "gpt-3.5-turbo", 
             Messages = conversationHistory
         });
 

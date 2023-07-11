@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8a338d679868f45439ea43c7ae035e36
+timeCreated: 1430156412
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - FocusTransform: {instanceID: 0}
+  - filmicDepthOfFieldShader: {fileID: 4800000, guid: bff0e5458fb914f5c9985ba4f09171d2,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

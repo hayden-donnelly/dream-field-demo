@@ -8,29 +8,47 @@ public class SpeechRecognition
     private OpenAIApi openai = new OpenAIApi();
     private string deviceName;
     private AudioClip clip;
-    byte[] bytes;
     public bool IsRecording { get; private set; }
+    public bool MicrophoneInitialized { get; private set; }
+    private int startPosition;
+    private float[] samples;
+
+    public void InitializeMicrophone()
+    {
+        if(MicrophoneInitialized) { return; }
+        deviceName = Microphone.devices[0];
+        clip = Microphone.Start(deviceName, true, 10, 44100);
+        MicrophoneInitialized = true;
+    }
 
     public void StartRecording()
     {
-        deviceName = Microphone.devices[0];
-        Debug.Log("Recording from " + deviceName);
-        clip = Microphone.Start(deviceName, true, 10, 44100);
+        if(!MicrophoneInitialized)
+        {
+            Debug.LogWarning("Tried to start recording but microphone is not initialized.");
+            return;
+        }
         IsRecording = true;
+        startPosition = Microphone.GetPosition(null);
+        Debug.Log("Recording from " + deviceName);
     }
 
     public void EndRecording()
     {
-        var position = Microphone.GetPosition(null);
-        Microphone.End(deviceName);
-        var samples = new float[position * clip.channels];
-        clip.GetData(samples, 0);
-        bytes = EncodeAsWAV(samples, clip.frequency, clip.channels);
+        if(!MicrophoneInitialized)
+        {
+            Debug.LogWarning("Tried to end recording but microphone is not initialized.");
+            return;
+        }
         IsRecording = false;
+        int endPosition = Microphone.GetPosition(null);
+        samples = new float[(endPosition - startPosition) * clip.channels];
+        clip.GetData(samples, startPosition);
     }
 
     public async Task<string> GetTranscription()
     {
+        byte[] bytes = EncodeAsWAV(samples, clip.frequency, clip.channels);
         var request = new CreateAudioTranscriptionsRequest
         {
             FileData = new FileData() {Data = bytes, Name = "audio.wav"},

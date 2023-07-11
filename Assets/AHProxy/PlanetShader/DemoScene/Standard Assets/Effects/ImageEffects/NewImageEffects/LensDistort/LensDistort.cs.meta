@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: ffc3d89220b0c4474a9da4e973345185
+timeCreated: 1430435706
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - LensDistortShader: {fileID: 4800000, guid: bac8dd9062ad74d27a6abe4cc6a24df2, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
