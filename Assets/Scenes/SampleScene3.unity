@@ -252,7 +252,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7decb31fc7e77f4479f5a0e02c2ccfa7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prompt: What is this place?
+  controls: {fileID: -944628639613478452, guid: 3dc60bbba5c43d646812110cb061fc57, type: 3}
 --- !u!82 &1547394238
 AudioSource:
   m_ObjectHideFlags: 0

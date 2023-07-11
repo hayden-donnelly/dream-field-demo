@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(AudioSource))]
 public class PromptTesting : MonoBehaviour
 {
-    [SerializeField] private string prompt = "What is this place?";
+    [SerializeField] private InputActionAsset controls;
     private Brain brain;
     private SpeechRecognition speechRecognition;
     private TextToSpeech textToSpeech;
@@ -16,19 +17,21 @@ public class PromptTesting : MonoBehaviour
         speechRecognition = new SpeechRecognition();
         textToSpeech = new TextToSpeech();
         audioSource = GetComponent<AudioSource>();
-    }
 
-    private void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.Space) && !speechRecognition.IsRecording)
+        InputActionMap basicMap = controls.FindActionMap("Basic");
+        basicMap.Enable();
+        InputAction recordAction = basicMap.FindAction("Record");
+        recordAction.started += context => 
         {
+            if(speechRecognition.IsRecording) { return; }
             speechRecognition.StartRecording();
-        }
-        else if (Input.GetKeyUp(KeyCode.Space) && speechRecognition.IsRecording)
+        };
+        recordAction.canceled += context => 
         {
+            if(!speechRecognition.IsRecording) { return; }
             speechRecognition.EndRecording();
             ProcessRecording();
-        }
+        };
     }
 
     private async Task ProcessRecording()
