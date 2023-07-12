@@ -3,8 +3,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(AudioSource))]
-public class PromptTesting : MonoBehaviour
+public class BrainInterface : MonoBehaviour
 {
+    [SerializeField] private string voice = "Olivia";
     [SerializeField] private InputActionAsset controls;
     [SerializeField] private EventBus eventBus;
     private Brain brain;
@@ -16,6 +17,7 @@ public class PromptTesting : MonoBehaviour
     {
         eventBus = EventBusHelper.GetEventBus(eventBus);
         brain = new Brain();
+        brain.BrainEventBus = eventBus;
         speechRecognition = new SpeechRecognition();
         speechRecognition.InitializeMicrophone();
         textToSpeech = new TextToSpeech();
@@ -37,12 +39,15 @@ public class PromptTesting : MonoBehaviour
             speechRecognition.EndRecording();
             ProcessRecording();
         };
+        
+        InputAction resetConvoAction = basicMap.FindAction("ResetConversation");
+        resetConvoAction.started += context => { brain.InitializeConversationHistory(); };
     }
 
     private async Task ProcessRecording()
     {
         string transcription = await speechRecognition.GetTranscription();
         string response = await brain.ThinkAndReply(transcription);
-        await textToSpeech.Speak(response, "Olivia", audioSource);
+        await textToSpeech.Speak(response, voice, audioSource);
     }
 }

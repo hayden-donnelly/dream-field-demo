@@ -7,4 +7,6 @@ public class EventBus : MonoBehaviour
 {
     public UnityEvent OnRecordingStarted;
     public UnityEvent OnRecordingEnded;
+    public UnityEvent OnFollowRequested;
+    public UnityEvent OnStayRequested;
 }

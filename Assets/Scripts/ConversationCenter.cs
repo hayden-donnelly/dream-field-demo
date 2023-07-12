@@ -3,10 +3,10 @@ using OpenAI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class ConversationCenter : MonoBehaviour
 {
-    [SerializeField] private SceneLoader sceneLoader;
     private bool isFollowing = false;
     [SerializeField] private float followDistance = 5f;
     [SerializeField] private Transform userTransform;
@@ -127,13 +127,13 @@ public class ConversationCenter : MonoBehaviour
                 (int, string) parsedResponse = ParseForSpecialTask(response);
                 if(parsedResponse.Item1 == 1)
                 {
-                    sceneLoader.LoadScene("Space");
+                    SceneManager.LoadScene("Space");
                     userTransform.position = Vector3.zero;
                     return parsedResponse.Item2;
                 }
                 else if(parsedResponse.Item1 == 2)
                 {
-                    sceneLoader.LoadScene("SampleScene2");
+                    SceneManager.LoadScene("SampleScene2");
                     userTransform.position = Vector3.zero;
                     return parsedResponse.Item2;
                 }

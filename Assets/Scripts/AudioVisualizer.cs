@@ -14,6 +14,14 @@ public class AudioVisualizer : MonoBehaviour
     // The current volume of the audio source
     private float volume;
 
+    private void Start()
+    {
+        if(audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {

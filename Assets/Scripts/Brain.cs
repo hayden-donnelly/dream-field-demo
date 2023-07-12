@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class Brain
 {
+    public EventBus BrainEventBus;
     private OpenAIApi openai;
     private Prompts prompts;
     private List<ChatMessage> conversationHistory;
@@ -95,10 +96,10 @@ public class Brain
         switch(specialTaskID)
         {
             case 1:
-                // Follow event
+                BrainEventBus.OnFollowRequested.Invoke();
                 break;
             case 2:
-                // Stop follow event
+                BrainEventBus.OnStayRequested.Invoke();
                 break;
             case 3:
                 int teleportationID = 
