@@ -21,15 +21,7 @@ namespace LAI.XR
     [DisallowMultipleComponent]
     public class XROrigin : MonoBehaviour
     {
-        [SerializeField]
-        [Tooltip("The Camera to associate with the XR device.")]
-        Camera m_Camera;
-
-        public Camera Camera
-        {
-            get => m_Camera;
-            set => m_Camera = value;
-        }
+        [SerializeField] private Camera xrCamera;
 
         // The parent <c>Transform</c> for all "trackables" (for example, planes and feature points).
         public Transform TrackablesParent { get; private set; }
@@ -48,7 +40,7 @@ namespace LAI.XR
             Floor,
         }
 
-        // This is the average seated height, which is 44 inches.
+        // Average seated height (44 inches).
         private const float defaultCameraYOffset = 1.1176f;
 
         public GameObject Origin;
@@ -61,21 +53,20 @@ namespace LAI.XR
             MoveOffsetHeight();
         }
 
-        [SerializeField]
-        TrackingOriginMode m_RequestedTrackingOriginMode = TrackingOriginMode.NotSpecified;
+        [SerializeField] private TrackingOriginMode requestedTrackingOriginMode = 
+            TrackingOriginMode.NotSpecified;
 
         public TrackingOriginMode RequestedTrackingOriginMode
         {
-            get => m_RequestedTrackingOriginMode;
+            get => requestedTrackingOriginMode;
             set
             {
-                m_RequestedTrackingOriginMode = value;
+                requestedTrackingOriginMode = value;
                 TryInitializeCamera();
             }
         }
 
-        [SerializeField]
-        float m_CameraYOffset = defaultCameraYOffset;
+        [SerializeField] private float m_CameraYOffset = defaultCameraYOffset;
 
         public float CameraYOffset
         {
@@ -89,17 +80,17 @@ namespace LAI.XR
 
         public TrackingOriginModeFlags CurrentTrackingOriginMode { get; private set; }
 
-        public Vector3 OriginInCameraSpacePos => m_Camera.transform.InverseTransformPoint(Origin.transform.position);
+        public Vector3 OriginInCameraSpacePos => xrCamera.transform.InverseTransformPoint(Origin.transform.position);
 
-        public Vector3 CameraInOriginSpacePos => Origin.transform.InverseTransformPoint(m_Camera.transform.position);
+        public Vector3 CameraInOriginSpacePos => Origin.transform.InverseTransformPoint(xrCamera.transform.position);
 
         public float CameraInOriginSpaceHeight => CameraInOriginSpacePos.y;
 
         static readonly List<XRInputSubsystem> s_InputSubsystems = new List<XRInputSubsystem>();
 
         // Bookkeeping to track lazy initialization of the tracking origin mode type.
-        bool m_CameraInitialized;
-        bool m_CameraInitializing;
+        private bool cameraInitialized;
+        private bool cameraInitializing;
 
         void MoveOffsetHeight()
         {
@@ -130,31 +121,34 @@ namespace LAI.XR
             }
         }
 
-        void TryInitializeCamera()
+        private void TryInitializeCamera()
         {
-            if (!Application.isPlaying)
-                return;
+            if(!Application.isPlaying) { return; }
 
-            m_CameraInitialized = SetupCamera();
-            if (!m_CameraInitialized & !m_CameraInitializing)
+            cameraInitialized = SetupCamera();
+            if(!cameraInitialized & !cameraInitializing)
+            {
                 StartCoroutine(RepeatInitializeCamera());
+            }
         }
 
-        bool SetupCamera()
+        private bool SetupCamera()
         {
-            var initialized = true;
+            bool initialized = true;
 
             SubsystemManager.GetInstances(s_InputSubsystems);
-            if (s_InputSubsystems.Count > 0)
+            if(s_InputSubsystems.Count > 0)
             {
-                foreach (var inputSubsystem in s_InputSubsystems)
+                foreach(XRInputSubsystem inputSubsystem in s_InputSubsystems)
                 {
-                    if (SetupCamera(inputSubsystem))
+                    if(SetupCameraWithInputSubsystem(inputSubsystem))
                     {
                         // It is possible this could happen more than
                         // once so unregister the callback first just in case.
-                        inputSubsystem.trackingOriginUpdated -= OnInputSubsystemTrackingOriginUpdated;
-                        inputSubsystem.trackingOriginUpdated += OnInputSubsystemTrackingOriginUpdated;
+                        inputSubsystem.trackingOriginUpdated -= 
+                            OnInputSubsystemTrackingOriginUpdated;
+                        inputSubsystem.trackingOriginUpdated += 
+                            OnInputSubsystemTrackingOriginUpdated;
                     }
                     else
                     {
@@ -166,70 +160,79 @@ namespace LAI.XR
             return initialized;
         }
 
-        bool SetupCamera(XRInputSubsystem inputSubsystem)
+        private bool SetupCameraWithInputSubsystem(XRInputSubsystem inputSubsystem)
         {
-            if (inputSubsystem == null)
-                return false;
+            if(inputSubsystem == null) { return false; }
 
-            var successful = true;
+            bool successful = true;
 
-            switch (m_RequestedTrackingOriginMode)
+            switch(requestedTrackingOriginMode)
             {
                 case TrackingOriginMode.NotSpecified:
                     CurrentTrackingOriginMode = inputSubsystem.GetTrackingOriginMode();
                     break;
                 case TrackingOriginMode.Device:
                 case TrackingOriginMode.Floor:
-                {
-                    var supportedModes = inputSubsystem.GetSupportedTrackingOriginModes();
+                    TrackingOriginModeFlags supportedModes = 
+                        inputSubsystem.GetSupportedTrackingOriginModes();
 
-                    // We need to check for Unknown because we may not be in a state where we can read this data yet.
-                    if (supportedModes == TrackingOriginModeFlags.Unknown)
-                        return false;
+                    // We need to check for Unknown because we may not be in a state where we 
+                    // can read this data yet.
+                    if(supportedModes == TrackingOriginModeFlags.Unknown) { return false; }
 
-                    // Convert from the request enum to the flags enum that is used by the subsystem
-                    var equivalentFlagsMode = m_RequestedTrackingOriginMode == TrackingOriginMode.Device
-                        ? TrackingOriginModeFlags.Device
-                        : TrackingOriginModeFlags.Floor;
+                    // Convert request enum to the flags enum that is used by the subsystem.
+                    TrackingOriginModeFlags equivalentFlagsMode = 
+                        (requestedTrackingOriginMode == TrackingOriginMode.Device)
+                        ? TrackingOriginModeFlags.Device : TrackingOriginModeFlags.Floor;
 
-                    // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags -- Treated like Flags enum when querying supported modes
-                    if ((supportedModes & equivalentFlagsMode) == 0)
+                    // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags 
+                    // -- Treated like Flags enum when querying supported modes
+                    if((supportedModes & equivalentFlagsMode) == 0)
                     {
-                        m_RequestedTrackingOriginMode = TrackingOriginMode.NotSpecified;
+                        requestedTrackingOriginMode = TrackingOriginMode.NotSpecified;
                         CurrentTrackingOriginMode = inputSubsystem.GetTrackingOriginMode();
-                        Debug.LogWarning($"Attempting to set the tracking origin mode to {equivalentFlagsMode}, but that is not supported by the SDK." +
-                            $" Supported types: {supportedModes:F}. Using the current mode of {CurrentTrackingOriginMode} instead.", this);
+                        string warningMessage = 
+                            $"Attempting to set the tracking origin mode to " +
+                            "{equivalentFlagsMode}, but that is not supported by the SDK. " +
+                            "Supported types: {supportedModes:F}. Using the current mode of " +
+                            "{CurrentTrackingOriginMode} instead.";
+                        Debug.LogWarning(warningMessage, this);
                     }
                     else
                     {
-                        successful = inputSubsystem.TrySetTrackingOriginMode(equivalentFlagsMode);
+                        successful = 
+                            inputSubsystem.TrySetTrackingOriginMode(equivalentFlagsMode);
                     }
-                }
                     break;
                 default:
-                    Assert.IsTrue(false, $"Unhandled {nameof(TrackingOriginMode)}={m_RequestedTrackingOriginMode}");
+                    string assertionText = 
+                        $"Unhandled {nameof(TrackingOriginMode)}={requestedTrackingOriginMode}";
+                    Assert.IsTrue(false, assertionText);
                     return false;
             }
 
-            if (successful)
-                MoveOffsetHeight();
+            if(successful) { MoveOffsetHeight(); }
 
-            if (CurrentTrackingOriginMode == TrackingOriginModeFlags.Device || m_RequestedTrackingOriginMode == TrackingOriginMode.Device)
-                successful = inputSubsystem.TryRecenter();
+            bool trackingModeIsDevice = 
+                CurrentTrackingOriginMode == TrackingOriginModeFlags.Device || 
+                requestedTrackingOriginMode == TrackingOriginMode.Device;
+            if(trackingModeIsDevice) { successful = inputSubsystem.TryRecenter(); }
 
             return successful;
         }
 
-        IEnumerator RepeatInitializeCamera()
+        private IEnumerator RepeatInitializeCamera()
         {
-            m_CameraInitializing = true;
-            while (!m_CameraInitialized)
+            cameraInitializing = true;
+            while(!cameraInitialized)
             {
                 yield return null;
-                if (!m_CameraInitialized)
-                    m_CameraInitialized = SetupCamera();
+                if(!cameraInitialized)
+                {
+                    cameraInitialized = SetupCamera();
+                }
             }
-            m_CameraInitializing = false;
+            cameraInitializing = false;
         }
 
         void OnInputSubsystemTrackingOriginUpdated(XRInputSubsystem inputSubsystem)
@@ -245,13 +248,13 @@ namespace LAI.XR
 
         public bool RotateAroundCameraPosition(Vector3 vector, float angleDegrees)
         {
-            if (m_Camera == null || Origin == null)
+            if (xrCamera == null || Origin == null)
             {
                 return false;
             }
 
             // Rotate around the camera position
-            Origin.transform.RotateAround(m_Camera.transform.position, vector, angleDegrees);
+            Origin.transform.RotateAround(xrCamera.transform.position, vector, angleDegrees);
 
             return true;
         }
@@ -274,10 +277,10 @@ namespace LAI.XR
 
         public bool MatchOriginUpCameraForward(Vector3 destinationUp, Vector3 destinationForward)
         {
-            if (m_Camera != null && MatchOriginUp(destinationUp))
+            if (xrCamera != null && MatchOriginUp(destinationUp))
             {
                 // Project current camera's forward vector on the destination plane, whose normal vector is destinationUp.
-                var projectedCamForward = Vector3.ProjectOnPlane(m_Camera.transform.forward, destinationUp).normalized;
+                var projectedCamForward = Vector3.ProjectOnPlane(xrCamera.transform.forward, destinationUp).normalized;
 
                 // The angle that we want the XROrigin to rotate is the signed angle between projectedCamForward and destinationForward, after the up vectors are matched.
                 var signedAngle = Vector3.SignedAngle(projectedCamForward, destinationForward, destinationUp);
@@ -307,12 +310,12 @@ namespace LAI.XR
 
         public bool MoveCameraToWorldLocation(Vector3 desiredWorldLocation)
         {
-            if (m_Camera == null)
+            if (xrCamera == null)
             {
                 return false;
             }
 
-            var rot = Matrix4x4.Rotate(m_Camera.transform.rotation);
+            var rot = Matrix4x4.Rotate(xrCamera.transform.rotation);
             var delta = rot.MultiplyPoint3x4(OriginInCameraSpacePos);
             Origin.transform.position = delta + desiredWorldLocation;
 
@@ -321,19 +324,26 @@ namespace LAI.XR
 
         protected void Awake()
         {
-            if (cameraFloorOffsetObject == null)
+            if(cameraFloorOffsetObject == null)
             {
-                Debug.LogWarning("No Camera Floor Offset Object specified for XR Origin, using attached GameObject.", this);
+                string warningMessage = 
+                    @"No Camera Floor Offset Object specified for XR Origin, 
+                    using attached GameObject.";
+                Debug.LogWarning(warningMessage, this);
                 cameraFloorOffsetObject = gameObject;
             }
 
-            if (m_Camera == null)
+            if(xrCamera == null)
             {
-                var mainCamera = Camera.main;
-                if (mainCamera != null)
-                    m_Camera = mainCamera;
+                Camera mainCamera = Camera.main;
+                if(mainCamera != null) { xrCamera = mainCamera; }
                 else
-                    Debug.LogWarning("No Main Camera is found for XR Origin, please assign the Camera field manually.", this);
+                {
+                    string warningMessage = 
+                        @"No Main Camera is found for XR Origin, 
+                        please assign the Camera field manually.";
+                    Debug.LogWarning(warningMessage, this);
+                }
             }
 
             // This will be the parent GameObject for any trackables (such as planes) for which
@@ -344,53 +354,74 @@ namespace LAI.XR
             TrackablesParent.localRotation = Quaternion.identity;
             TrackablesParent.localScale = Vector3.one;
 
-            if (m_Camera)
+            if(xrCamera)
             {
-#if INCLUDE_INPUT_SYSTEM && INCLUDE_LEGACY_INPUT_HELPERS
-                var trackedPoseDriver = m_Camera.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
-                var trackedPoseDriverOld = m_Camera.GetComponent<UnityEngine.SpatialTracking.TrackedPoseDriver>();
-                if (trackedPoseDriver == null && trackedPoseDriverOld == null)
+                #if INCLUDE_INPUT_SYSTEM && INCLUDE_LEGACY_INPUT_HELPERS
+                var trackedPoseDriver = 
+                    xrCamera.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
+                var trackedPoseDriverOld = 
+                    xrCamera.GetComponent<UnityEngine.SpatialTracking.TrackedPoseDriver>();
+                
+                if(trackedPoseDriver == null && trackedPoseDriverOld == null)
                 {
-                    Debug.LogWarning(
-                        $"Camera \"{m_Camera.name}\" does not use a Tracked Pose Driver (Input System), " +
-                        "so its transform will not be updated by an XR device.  In order for this to be " +
-                        "updated, please add a Tracked Pose Driver (Input System) with bindings for position and rotation of the center eye.", this);
+                    string warningMessage = 
+                        $"Camera \"{xrCamera.name}\" does not use a Tracked Pose Driver " +
+                        "(Input System), so its transform will not be updated by an XR " + 
+                        "device. In order for this to be updated, please add a Tracked Pose " +
+                        "Driver (Input System) with bindings for position and rotation of " +
+                        "the center eye.";
+                    Debug.LogWarning(warningMessage, this);
                 }
-#elif !INCLUDE_INPUT_SYSTEM && INCLUDE_LEGACY_INPUT_HELPERS
-                var trackedPoseDriverOld = m_Camera.GetComponent<UnityEngine.SpatialTracking.TrackedPoseDriver>();
-                if (trackedPoseDriverOld == null)
+
+                #elif !INCLUDE_INPUT_SYSTEM && INCLUDE_LEGACY_INPUT_HELPERS
+                var trackedPoseDriverOld = 
+                    xrCamera.GetComponent<UnityEngine.SpatialTracking.TrackedPoseDriver>();
+                
+                if(trackedPoseDriverOld == null)
                 {
-                    Debug.LogWarning(
-                        $"Camera \"{m_Camera.name}\" does not use a Tracked Pose Driver, and com.unity.xr.legacyinputhelpers is installed. " +
-                        "Although the Tracked Pose Driver from Legacy Input Helpers can be used, it is recommended to " +
-                        "install com.unity.inputsystem instead and add a Tracked Pose Driver (Input System) with bindings for position and rotation of the center eye.", this);
+                    string warningMessage = 
+                        $"Camera \"{xrCamera.name}\" does not use a Tracked Pose Driver, " +
+                        "and com.unity.xr.legacyinputhelpers is installed. Although the " +
+                        "Tracked Pose Driver from Legacy Input Helpers can be used, it is " +
+                        "recommended to install com.unity.inputsystem instead and add a " +
+                        "Tracked Pose Driver (Input System) with bindings for position and " +
+                        "rotation of the center eye.";
+                    Debug.LogWarning(warningMessage, this);
                 }
-#elif INCLUDE_INPUT_SYSTEM && !INCLUDE_LEGACY_INPUT_HELPERS
-                var trackedPoseDriver = m_Camera.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
-                if (trackedPoseDriver == null)
+
+                #elif INCLUDE_INPUT_SYSTEM && !INCLUDE_LEGACY_INPUT_HELPERS
+                var trackedPoseDriver = 
+                    xrCamera.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
+                
+                if(trackedPoseDriver == null)
                 {
-                    Debug.LogWarning(
-                        $"Camera \"{m_Camera.name}\" does not use a Tracked Pose Driver (Input System), " +
-                        "so its transform will not be updated by an XR device.  In order for this to be " +
-                        "updated, please add a Tracked Pose Driver (Input System) with bindings for position and rotation of the center eye.", this);
+                    string warningMessage = 
+                        $"Camera \"{xrCamera.name}\" does not use a Tracked Pose Driver " +
+                        "(Input System), so its transform will not be updated by an XR " +
+                        "device. In order for this to be updated, please add a Tracked Pose " +
+                        "Driver (Input System) with bindings for position and rotation of " +
+                        "the center eye.";
+                    Debug.LogWarning(warningMessage, this);
                 }
-#elif !INCLUDE_INPUT_SYSTEM && !INCLUDE_LEGACY_INPUT_HELPERS
-                Debug.LogWarning(
-                    $"Camera \"{m_Camera.name}\" does not use a Tracked Pose Driver and com.unity.inputsystem is not installed, " +
-                    "so its transform will not be updated by an XR device.  In order for this to be " +
-                    "updated, please install com.unity.inputsystem and add a Tracked Pose Driver (Input System) with bindings for position and rotation of the center eye.", this);
-#endif
+
+                #elif !INCLUDE_INPUT_SYSTEM && !INCLUDE_LEGACY_INPUT_HELPERS
+                string warningMessage = 
+                    $"Camera \"{xrCamera.name}\" does not use a Tracked Pose Driver and " +
+                    "com.unity.inputsystem is not installed, so its transform will not be " +
+                    "updated by an XR device. In order for this to be updated, please " +
+                    "com.unity.inputsystem and add a Tracked Pose Driver (Input System) " +
+                    "with bindings for position and rotation of the center eye.";
+                Debug.LogWarning(warningMessage, this);
+                #endif
             }
         }
 
-        Pose GetCameraOriginPose()
+        private Pose GetCameraOriginPose()
         {
             var localOriginPose = Pose.identity;
-            var parent = m_Camera.transform.parent;
+            var parent = xrCamera.transform.parent;
 
-            return parent
-                ? parent.TransformPose(localOriginPose)
-                : localOriginPose;
+            return parent ? parent.TransformPose(localOriginPose) : localOriginPose;
         }
 
         protected void OnEnable() => Application.onBeforeRender += OnBeforeRender;
@@ -399,7 +430,7 @@ namespace LAI.XR
 
         void OnBeforeRender()
         {
-            if (m_Camera)
+            if (xrCamera)
             {
                 var pose = GetCameraOriginPose();
                 TrackablesParent.position = pose.position;
@@ -437,7 +468,7 @@ namespace LAI.XR
                     {
                         // Convert from the request enum to the flags enum that is used by the subsystem
                         TrackingOriginModeFlags equivalentFlagsMode;
-                        switch (m_RequestedTrackingOriginMode)
+                        switch (requestedTrackingOriginMode)
                         {
                             case TrackingOriginMode.NotSpecified:
                                 // Don't need to initialize the camera since we don't set the mode when NotSpecified (we just keep the current value)
@@ -449,7 +480,7 @@ namespace LAI.XR
                                 equivalentFlagsMode = TrackingOriginModeFlags.Floor;
                                 break;
                             default:
-                                Assert.IsTrue(false, $"Unhandled {nameof(TrackingOriginMode)}={m_RequestedTrackingOriginMode}");
+                                Assert.IsTrue(false, $"Unhandled {nameof(TrackingOriginMode)}={requestedTrackingOriginMode}");
                                 return false;
                         }
 

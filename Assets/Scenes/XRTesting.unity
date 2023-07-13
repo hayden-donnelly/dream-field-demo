@@ -1738,7 +1738,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5e16f7c36a4b764f8aea4b8869f7f2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Camera: {fileID: 1966756541}
+  xrCamera: {fileID: 0}
   Origin: {fileID: 1176563235}
   cameraFloorOffsetObject: {fileID: 1168221415}
   m_RequestedTrackingOriginMode: 0
@@ -2144,7 +2144,7 @@ GameObject:
   - component: {fileID: 1966756539}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
