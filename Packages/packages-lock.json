@@ -1,15 +1,5 @@
 {
   "dependencies": {
-    "com.huggingface.api": {
-      "version": "https://github.com/huggingface/unity-api.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.textmeshpro": "3.0.6",
-        "com.unity.nuget.newtonsoft-json": "3.0.1"
-      },
-      "hash": "16bff49a84e5707e03a84b15ae3172def10f8619"
-    },
     "com.lmnt.unity": {
       "version": "file:com.lmnt.unity",
       "depth": 0,
