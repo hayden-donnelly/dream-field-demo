@@ -408,9 +408,9 @@ namespace LAI.XR
 
             if (TrackablesParent.hasChanged)
             {
-                TrackablesParentTransformChanged?.Invoke(
-                    new ARTrackablesParentTransformChangedEventArgs(this, TrackablesParent));
-                 TrackablesParent.hasChanged = false;
+                //TrackablesParentTransformChanged?.Invoke(
+                //    new ARTrackablesParentTransformChangedEventArgs(this, TrackablesParent));
+                //TrackablesParent.hasChanged = false;
             }
         }
 
