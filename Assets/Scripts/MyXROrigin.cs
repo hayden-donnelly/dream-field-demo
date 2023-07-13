@@ -17,21 +17,17 @@ using Unity.XR.CoreUtils;
 
 namespace LAI.XR
 {
-    [AddComponentMenu("LAI/XR/XR Origin")]
+    [AddComponentMenu("LAI/XR/My XR Origin")]
     [DisallowMultipleComponent]
-    public class XROrigin : MonoBehaviour
+    public class MyXROrigin : MonoBehaviour
     {
-        [SerializeField] private Camera xrCamera;
-
-        // The parent <c>Transform</c> for all "trackables" (for example, planes and feature points).
-        public Transform TrackablesParent { get; private set; }
-
-        public event Action<ARTrackablesParentTransformChangedEventArgs> TrackablesParentTransformChanged;
+        public GameObject Origin;
 
         public enum TrackingOriginMode
         {
             // Uses the default Tracking Origin Mode of the input device.
-            // When changing to this value after startup, the Tracking Origin Mode will not be changed.
+            // When changing to this value after startup, the Tracking Origin 
+            // Mode will not be changed.
             NotSpecified,
             // Input devices will be tracked relative to the first known location.
             // Represents a device-relative tracking origin.
@@ -39,23 +35,8 @@ namespace LAI.XR
             // Input devices will be tracked relative to a location on the floor.
             Floor,
         }
-
-        // Average seated height (44 inches).
-        private const float defaultCameraYOffset = 1.1176f;
-
-        public GameObject Origin;
-
-        [SerializeField] private GameObject cameraFloorOffsetObject;
-
-        public void SetCameraFloorOffsetObject(GameObject cameraFloorOffsetObject)
-        {
-            this.cameraFloorOffsetObject = cameraFloorOffsetObject;
-            MoveOffsetHeight();
-        }
-
         [SerializeField] private TrackingOriginMode requestedTrackingOriginMode = 
             TrackingOriginMode.NotSpecified;
-
         public TrackingOriginMode RequestedTrackingOriginMode
         {
             get => requestedTrackingOriginMode;
@@ -66,23 +47,34 @@ namespace LAI.XR
             }
         }
 
-        [SerializeField] private float m_CameraYOffset = defaultCameraYOffset;
-
+        [SerializeField] private Camera xrCamera;
+        private const float defaultCameraYOffset = 1.1176f; // Average seated height.
+        [SerializeField] private GameObject cameraFloorOffsetObject;
+        [SerializeField] private float cameraYOffset = defaultCameraYOffset;
         public float CameraYOffset
         {
-            get => m_CameraYOffset;
+            get => cameraYOffset;
             set
             {
-                m_CameraYOffset = value;
+                cameraYOffset = value;
                 MoveOffsetHeight();
             }
         }
 
+        public void SetCameraFloorOffsetObject(GameObject cameraFloorOffsetObject)
+        {
+            this.cameraFloorOffsetObject = cameraFloorOffsetObject;
+            MoveOffsetHeight();
+        }
+
+
         public TrackingOriginModeFlags CurrentTrackingOriginMode { get; private set; }
 
-        public Vector3 OriginInCameraSpacePos => xrCamera.transform.InverseTransformPoint(Origin.transform.position);
+        public Vector3 OriginInCameraSpacePos => 
+            xrCamera.transform.InverseTransformPoint(Origin.transform.position);
 
-        public Vector3 CameraInOriginSpacePos => Origin.transform.InverseTransformPoint(xrCamera.transform.position);
+        public Vector3 CameraInOriginSpacePos => 
+            Origin.transform.InverseTransformPoint(xrCamera.transform.position);
 
         public float CameraInOriginSpaceHeight => CameraInOriginSpacePos.y;
 
@@ -92,7 +84,7 @@ namespace LAI.XR
         private bool cameraInitialized;
         private bool cameraInitializing;
 
-        void MoveOffsetHeight()
+        private void MoveOffsetHeight()
         {
             if (!Application.isPlaying)
                 return;
@@ -100,22 +92,22 @@ namespace LAI.XR
             switch (CurrentTrackingOriginMode)
             {
                 case TrackingOriginModeFlags.Floor:
-                    MoveOffsetHeight(0f);
+                    MoveOffsetHeightToSpecified(0f);
                     break;
                 case TrackingOriginModeFlags.Device:
-                    MoveOffsetHeight(m_CameraYOffset);
+                    MoveOffsetHeightToSpecified(cameraYOffset);
                     break;
                 default:
                     return;
             }
         }
 
-        void MoveOffsetHeight(float y)
+        private void MoveOffsetHeightToSpecified(float y)
         {
-            if (cameraFloorOffsetObject != null)
+            if(cameraFloorOffsetObject != null)
             {
-                var offsetTransform = cameraFloorOffsetObject.transform;
-                var desiredPosition = offsetTransform.localPosition;
+                Transform offsetTransform = cameraFloorOffsetObject.transform;
+                Vector3 desiredPosition = offsetTransform.localPosition;
                 desiredPosition.y = y;
                 offsetTransform.localPosition = desiredPosition;
             }
@@ -192,10 +184,10 @@ namespace LAI.XR
                         requestedTrackingOriginMode = TrackingOriginMode.NotSpecified;
                         CurrentTrackingOriginMode = inputSubsystem.GetTrackingOriginMode();
                         string warningMessage = 
-                            $"Attempting to set the tracking origin mode to " +
-                            "{equivalentFlagsMode}, but that is not supported by the SDK. " +
-                            "Supported types: {supportedModes:F}. Using the current mode of " +
-                            "{CurrentTrackingOriginMode} instead.";
+                            "Attempting to set the tracking origin mode to " +
+                            $"{equivalentFlagsMode}, but that is not supported by the SDK. " +
+                            $"Supported types: {supportedModes:F}. Using the current mode of " +
+                            $"{CurrentTrackingOriginMode} instead.";
                         Debug.LogWarning(warningMessage, this);
                     }
                     else
@@ -235,7 +227,7 @@ namespace LAI.XR
             cameraInitializing = false;
         }
 
-        void OnInputSubsystemTrackingOriginUpdated(XRInputSubsystem inputSubsystem)
+        private void OnInputSubsystemTrackingOriginUpdated(XRInputSubsystem inputSubsystem)
         {
             CurrentTrackingOriginMode = inputSubsystem.GetTrackingOriginMode();
             MoveOffsetHeight();
@@ -248,60 +240,63 @@ namespace LAI.XR
 
         public bool RotateAroundCameraPosition(Vector3 vector, float angleDegrees)
         {
-            if (xrCamera == null || Origin == null)
-            {
-                return false;
-            }
+            if(xrCamera == null || Origin == null) { return false; }
 
             // Rotate around the camera position
             Origin.transform.RotateAround(xrCamera.transform.position, vector, angleDegrees);
-
             return true;
         }
 
         public bool MatchOriginUp(Vector3 destinationUp)
         {
-            if (Origin == null)
-            {
-                return false;
-            }
+            if(Origin == null) { return false; }
 
-            if (Origin.transform.up == destinationUp)
-                return true;
+            if(Origin.transform.up == destinationUp) { return true; }
 
-            var rigUp = Quaternion.FromToRotation(Origin.transform.up, destinationUp);
+            Quaternion rigUp = Quaternion.FromToRotation(Origin.transform.up, destinationUp);
             Origin.transform.rotation = rigUp * transform.rotation;
-
             return true;
         }
 
-        public bool MatchOriginUpCameraForward(Vector3 destinationUp, Vector3 destinationForward)
+        public bool MatchOriginUpCameraForward(
+            Vector3 destinationUp, Vector3 destinationForward
+        )
         {
-            if (xrCamera != null && MatchOriginUp(destinationUp))
+            if(xrCamera != null && MatchOriginUp(destinationUp))
             {
-                // Project current camera's forward vector on the destination plane, whose normal vector is destinationUp.
-                var projectedCamForward = Vector3.ProjectOnPlane(xrCamera.transform.forward, destinationUp).normalized;
+                // Project current camera's forward vector on the destination plane, 
+                // whose normal vector is destinationUp.
+                Vector3 projectedCamForward = Vector3.ProjectOnPlane(
+                    xrCamera.transform.forward, destinationUp
+                ).normalized;
 
-                // The angle that we want the XROrigin to rotate is the signed angle between projectedCamForward and destinationForward, after the up vectors are matched.
-                var signedAngle = Vector3.SignedAngle(projectedCamForward, destinationForward, destinationUp);
+                // The angle that we want the XROrigin to rotate is the signed angle between 
+                // projectedCamForward and destinationForward, after the up vectors are matched.
+                float signedAngle = Vector3.SignedAngle(
+                    projectedCamForward, destinationForward, destinationUp
+                );
 
                 RotateAroundCameraPosition(destinationUp, signedAngle);
-
                 return true;
             }
 
             return false;
         }
 
-        public bool MatchOriginUpOriginForward(Vector3 destinationUp, Vector3 destinationForward)
+        public bool MatchOriginUpOriginForward(
+            Vector3 destinationUp, Vector3 destinationForward
+        )
         {
-            if (Origin != null && MatchOriginUp(destinationUp))
+            if(Origin != null && MatchOriginUp(destinationUp))
             {
-                // The angle that we want the XR Origin to rotate is the signed angle between the origin's forward and destinationForward, after the up vectors are matched.
-                var signedAngle = Vector3.SignedAngle(Origin.transform.forward, destinationForward, destinationUp);
+                // The angle that we want the XR Origin to rotate is the signed angle between 
+                // the origin's forward and destinationForward, after the up vectors 
+                // are matched.
+                float signedAngle = Vector3.SignedAngle(
+                    Origin.transform.forward, destinationForward, destinationUp
+                );
 
                 RotateAroundCameraPosition(destinationUp, signedAngle);
-
                 return true;
             }
 
@@ -310,15 +305,11 @@ namespace LAI.XR
 
         public bool MoveCameraToWorldLocation(Vector3 desiredWorldLocation)
         {
-            if (xrCamera == null)
-            {
-                return false;
-            }
+            if(xrCamera == null) { return false; }
 
-            var rot = Matrix4x4.Rotate(xrCamera.transform.rotation);
-            var delta = rot.MultiplyPoint3x4(OriginInCameraSpacePos);
+            Matrix4x4 rot = Matrix4x4.Rotate(xrCamera.transform.rotation);
+            Vector3 delta = rot.MultiplyPoint3x4(OriginInCameraSpacePos);
             Origin.transform.position = delta + desiredWorldLocation;
-
             return true;
         }
 
@@ -345,14 +336,6 @@ namespace LAI.XR
                     Debug.LogWarning(warningMessage, this);
                 }
             }
-
-            // This will be the parent GameObject for any trackables (such as planes) for which
-            // we want a corresponding GameObject.
-            TrackablesParent = (new GameObject("Trackables")).transform;
-            TrackablesParent.SetParent(transform, false);
-            TrackablesParent.localPosition = Vector3.zero;
-            TrackablesParent.localRotation = Quaternion.identity;
-            TrackablesParent.localScale = Vector3.one;
 
             if(xrCamera)
             {
@@ -418,8 +401,8 @@ namespace LAI.XR
 
         private Pose GetCameraOriginPose()
         {
-            var localOriginPose = Pose.identity;
-            var parent = xrCamera.transform.parent;
+            Pose localOriginPose = Pose.identity;
+            Transform parent = xrCamera.transform.parent;
 
             return parent ? parent.TransformPose(localOriginPose) : localOriginPose;
         }
@@ -428,66 +411,58 @@ namespace LAI.XR
 
         protected void OnDisable() => Application.onBeforeRender -= OnBeforeRender;
 
-        void OnBeforeRender()
+        private void OnBeforeRender()
         {
-            if (xrCamera)
+            if(xrCamera)
             {
-                var pose = GetCameraOriginPose();
-                TrackablesParent.position = pose.position;
-                TrackablesParent.rotation = pose.rotation;
-            }
-
-            if (TrackablesParent.hasChanged)
-            {
-                //TrackablesParentTransformChanged?.Invoke(
-                //    new ARTrackablesParentTransformChangedEventArgs(this, TrackablesParent));
-                //TrackablesParent.hasChanged = false;
+                Pose pose = GetCameraOriginPose();
             }
         }
 
         protected void OnValidate()
         {
-            if (Origin == null)
-                Origin = gameObject;
+            if(Origin == null) { Origin = gameObject; }
 
-            if (Application.isPlaying && isActiveAndEnabled)
+            if(Application.isPlaying && isActiveAndEnabled)
             {
                 // Respond to the mode changing by re-initializing the camera,
                 // or just update the offset height in order to avoid recentering.
-                if (IsModeStale())
-                    TryInitializeCamera();
-                else
-                    MoveOffsetHeight();
+                if (IsModeStale()) { TryInitializeCamera(); }
+                else { MoveOffsetHeight(); }
             }
 
             bool IsModeStale()
             {
-                if (s_InputSubsystems.Count > 0)
+                if(s_InputSubsystems.Count <= 0) { return false; }
+                foreach (var inputSubsystem in s_InputSubsystems)
                 {
-                    foreach (var inputSubsystem in s_InputSubsystems)
+                    // Convert from the request enum to the flags enum that is used by 
+                    // the subsystem.
+                    TrackingOriginModeFlags equivalentFlagsMode;
+                    switch (requestedTrackingOriginMode)
                     {
-                        // Convert from the request enum to the flags enum that is used by the subsystem
-                        TrackingOriginModeFlags equivalentFlagsMode;
-                        switch (requestedTrackingOriginMode)
-                        {
-                            case TrackingOriginMode.NotSpecified:
-                                // Don't need to initialize the camera since we don't set the mode when NotSpecified (we just keep the current value)
-                                return false;
-                            case TrackingOriginMode.Device:
-                                equivalentFlagsMode = TrackingOriginModeFlags.Device;
-                                break;
-                            case TrackingOriginMode.Floor:
-                                equivalentFlagsMode = TrackingOriginModeFlags.Floor;
-                                break;
-                            default:
-                                Assert.IsTrue(false, $"Unhandled {nameof(TrackingOriginMode)}={requestedTrackingOriginMode}");
-                                return false;
-                        }
+                        case TrackingOriginMode.NotSpecified:
+                            // Don't need to initialize the camera since we don't set the 
+                            // mode when NotSpecified (we just keep the current value).
+                            return false;
+                        case TrackingOriginMode.Device:
+                            equivalentFlagsMode = TrackingOriginModeFlags.Device;
+                            break;
+                        case TrackingOriginMode.Floor:
+                            equivalentFlagsMode = TrackingOriginModeFlags.Floor;
+                            break;
+                        default:
+                            string assertionText = 
+                                $"Unhandled {nameof(TrackingOriginMode)}=" +
+                                $"{requestedTrackingOriginMode}";
+                            Assert.IsTrue(false, assertionText);
+                            return false;
+                    }
 
-                        if (inputSubsystem != null && inputSubsystem.GetTrackingOriginMode() != equivalentFlagsMode)
-                        {
-                            return true;
-                        }
+                    if(inputSubsystem != null && 
+                        inputSubsystem.GetTrackingOriginMode() != equivalentFlagsMode)
+                    {
+                        return true;
                     }
                 }
                 return false;
@@ -501,10 +476,13 @@ namespace LAI.XR
 
         protected void OnDestroy()
         {
-            foreach (var inputSubsystem in s_InputSubsystems)
+            foreach(XRInputSubsystem inputSubsystem in s_InputSubsystems)
             {
-                if (inputSubsystem != null)
-                    inputSubsystem.trackingOriginUpdated -= OnInputSubsystemTrackingOriginUpdated;
+                if(inputSubsystem != null)
+                {
+                    inputSubsystem.trackingOriginUpdated -= 
+                        OnInputSubsystemTrackingOriginUpdated;
+                }
             }
         }
     }
