@@ -331,7 +331,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9ada2a0023eac642bd722cd772fb136, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneLoader: {fileID: 1103436255}
 --- !u!114 &1103436255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,7 +343,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0bf2c9d55415cc4897449f92449f325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waitTime: 0.5
 --- !u!4 &1103436256
 Transform:
   m_ObjectHideFlags: 0

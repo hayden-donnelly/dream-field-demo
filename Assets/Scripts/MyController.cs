@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace LAI.XR
 {
+    [RequireComponent(typeof(LineRenderer))]
     public class MyController : MonoBehaviour
     {
         private enum ControllerType
@@ -30,13 +31,19 @@ namespace LAI.XR
         [Header("Movement")]
         [SerializeField] private bool teleportMode = true;
         [SerializeField] private float movementSpeed = 1f;
-        [SerializeField] private float teleportationDistance = 6.0f;
+        [SerializeField] private float maxTeleportationDistance = 6.0f;
+        [SerializeField] private float maxTeleportationAngle = 45f;
         private bool inTeleportContext = false;
+        private bool teleportTargetIsValid = false;
+        private Vector3 teleportationTarget;
+        private LineRenderer lineRenderer;
 
         private void Start()
         {
             originTransform = origin.transform;
             xrOrigin = origin.GetComponent<MyXROrigin>();
+            lineRenderer = GetComponent<LineRenderer>();
+            lineRenderer.enabled = false;
 
             string controllerName = 
                 (controllerType == ControllerType.Left) ? leftHandName : rightHandName;
@@ -96,8 +103,16 @@ namespace LAI.XR
         private void SetTeleportCallback(InputActionMap interaction)
         {
             InputAction teleportContext = interaction.FindAction("Select");
-            teleportContext.performed += context => { inTeleportContext = true; };
-            teleportContext.canceled += context => { inTeleportContext = false; };
+            teleportContext.performed += context => 
+            {
+                inTeleportContext = true;
+                lineRenderer.enabled = true;
+            };
+            teleportContext.canceled += context => 
+            { 
+                inTeleportContext = false; 
+                lineRenderer.enabled = false;
+            };
             
             InputAction teleport = interaction.FindAction("Activate");
             teleport.performed += context => { Teleport(); };
@@ -120,16 +135,22 @@ namespace LAI.XR
                 if(snapTurn) { SnapRotateBody(rotationInput); }
                 else { SmoothRotateBody(rotationInput); }
             }
+            if(inTeleportContext) 
+            {
+                GetTeleportTarget();
+                SetTeleportLineColor();
+                SetTeleportLinePosition();
+            }
         }
 
         private void UpdateHandPosition(Vector3 position)
         {
-            transform.position = position;
+            transform.localPosition = position;
         }
 
         private void UpdateHandRotation(Quaternion rotation)
         {
-            transform.rotation = rotation;
+            transform.localRotation = rotation;
         }
 
         private void SnapRotateBody(Vector2 rotationInput)   
@@ -153,12 +174,47 @@ namespace LAI.XR
             originTransform.Rotate(0, yRotation, 0);
         }
 
+        private void GetTeleportTarget()
+        {
+            RaycastHit hit;
+            Vector3 rayDirection = transform.forward;
+            teleportTargetIsValid = false;
+            teleportationTarget = Vector3.zero;
+            if(Physics.Raycast(transform.position, rayDirection, out hit))
+            {
+                if(Vector3.Angle(Vector3.up, hit.normal) > maxTeleportationAngle) { return; }
+                if(hit.distance > maxTeleportationDistance) { return; }
+                teleportTargetIsValid = true;
+                teleportationTarget = hit.point;   
+            }
+        }
+
+        private void SetTeleportLineColor()
+        {
+            if(!teleportTargetIsValid) 
+            { 
+                lineRenderer.startColor = Color.red;
+                lineRenderer.endColor = Color.red;
+            }
+            else
+            { 
+                lineRenderer.startColor = Color.green;
+                lineRenderer.endColor = Color.green;
+            }
+        }
+
+        private void SetTeleportLinePosition()
+        {
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(
+                1, transform.position + transform.forward * maxTeleportationDistance
+            );
+        }
+
         private void Teleport()
         {
-            if(!inTeleportContext) { return; }
-            Vector3 cameraForward = xrOrigin.XRCamera.transform.forward;
-            cameraForward.y = 0;
-            originTransform.position += cameraForward * teleportationDistance;
+            if(!inTeleportContext || !teleportTargetIsValid) { return; }
+            originTransform.position = teleportationTarget;
         }
 
         private void Move(Vector2 movementInput)
