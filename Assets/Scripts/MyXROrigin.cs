@@ -47,7 +47,7 @@ namespace LAI.XR
             }
         }
 
-        [SerializeField] private Camera xrCamera;
+        public Camera XRCamera;
         private const float defaultCameraYOffset = 1.1176f; // Average seated height.
         [SerializeField] private GameObject cameraFloorOffsetObject;
         [SerializeField] private float cameraYOffset = defaultCameraYOffset;
@@ -71,10 +71,10 @@ namespace LAI.XR
         public TrackingOriginModeFlags CurrentTrackingOriginMode { get; private set; }
 
         public Vector3 OriginInCameraSpacePos => 
-            xrCamera.transform.InverseTransformPoint(Origin.transform.position);
+            XRCamera.transform.InverseTransformPoint(Origin.transform.position);
 
         public Vector3 CameraInOriginSpacePos => 
-            Origin.transform.InverseTransformPoint(xrCamera.transform.position);
+            Origin.transform.InverseTransformPoint(XRCamera.transform.position);
 
         public float CameraInOriginSpaceHeight => CameraInOriginSpacePos.y;
 
@@ -240,10 +240,10 @@ namespace LAI.XR
 
         public bool RotateAroundCameraPosition(Vector3 vector, float angleDegrees)
         {
-            if(xrCamera == null || Origin == null) { return false; }
+            if(XRCamera == null || Origin == null) { return false; }
 
             // Rotate around the camera position
-            Origin.transform.RotateAround(xrCamera.transform.position, vector, angleDegrees);
+            Origin.transform.RotateAround(XRCamera.transform.position, vector, angleDegrees);
             return true;
         }
 
@@ -262,12 +262,12 @@ namespace LAI.XR
             Vector3 destinationUp, Vector3 destinationForward
         )
         {
-            if(xrCamera != null && MatchOriginUp(destinationUp))
+            if(XRCamera != null && MatchOriginUp(destinationUp))
             {
                 // Project current camera's forward vector on the destination plane, 
                 // whose normal vector is destinationUp.
                 Vector3 projectedCamForward = Vector3.ProjectOnPlane(
-                    xrCamera.transform.forward, destinationUp
+                    XRCamera.transform.forward, destinationUp
                 ).normalized;
 
                 // The angle that we want the XROrigin to rotate is the signed angle between 
@@ -305,9 +305,9 @@ namespace LAI.XR
 
         public bool MoveCameraToWorldLocation(Vector3 desiredWorldLocation)
         {
-            if(xrCamera == null) { return false; }
+            if(XRCamera == null) { return false; }
 
-            Matrix4x4 rot = Matrix4x4.Rotate(xrCamera.transform.rotation);
+            Matrix4x4 rot = Matrix4x4.Rotate(XRCamera.transform.rotation);
             Vector3 delta = rot.MultiplyPoint3x4(OriginInCameraSpacePos);
             Origin.transform.position = delta + desiredWorldLocation;
             return true;
@@ -324,10 +324,10 @@ namespace LAI.XR
                 cameraFloorOffsetObject = gameObject;
             }
 
-            if(xrCamera == null)
+            if(XRCamera == null)
             {
                 Camera mainCamera = Camera.main;
-                if(mainCamera != null) { xrCamera = mainCamera; }
+                if(mainCamera != null) { XRCamera = mainCamera; }
                 else
                 {
                     string warningMessage = 
@@ -337,7 +337,7 @@ namespace LAI.XR
                 }
             }
 
-            if(xrCamera)
+            if(XRCamera)
             {
                 #if INCLUDE_INPUT_SYSTEM && INCLUDE_LEGACY_INPUT_HELPERS
                 var trackedPoseDriver = 
@@ -389,7 +389,7 @@ namespace LAI.XR
 
                 #elif !INCLUDE_INPUT_SYSTEM && !INCLUDE_LEGACY_INPUT_HELPERS
                 string warningMessage = 
-                    $"Camera \"{xrCamera.name}\" does not use a Tracked Pose Driver and " +
+                    $"Camera \"{XRCamera.name}\" does not use a Tracked Pose Driver and " +
                     "com.unity.inputsystem is not installed, so its transform will not be " +
                     "updated by an XR device. In order for this to be updated, please " +
                     "com.unity.inputsystem and add a Tracked Pose Driver (Input System) " +
@@ -402,7 +402,7 @@ namespace LAI.XR
         private Pose GetCameraOriginPose()
         {
             Pose localOriginPose = Pose.identity;
-            Transform parent = xrCamera.transform.parent;
+            Transform parent = XRCamera.transform.parent;
 
             return parent ? parent.TransformPose(localOriginPose) : localOriginPose;
         }
@@ -413,7 +413,7 @@ namespace LAI.XR
 
         private void OnBeforeRender()
         {
-            if(xrCamera)
+            if(XRCamera)
             {
                 Pose pose = GetCameraOriginPose();
             }

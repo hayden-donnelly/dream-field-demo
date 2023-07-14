@@ -684,10 +684,13 @@ MonoBehaviour:
   controllerType: 1
   actionAsset: {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   origin: {fileID: 1176563235}
-  snapTurn: 0
+  snapTurn: 1
   snapTurnAngle: 45
   snapTurnCooldown: 0.2
   smoothTurnSpeed: 20
+  teleportMode: 1
+  movementSpeed: 1
+  teleportationDistance: 6
 --- !u!1 &456444347
 GameObject:
   m_ObjectHideFlags: 0
@@ -2656,7 +2659,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Origin: {fileID: 1176563235}
   requestedTrackingOriginMode: 0
-  xrCamera: {fileID: 1966756541}
+  XRCamera: {fileID: 0}
   cameraFloorOffsetObject: {fileID: 1168221415}
   cameraYOffset: 1.1176
 --- !u!1 &1368102142
@@ -2902,6 +2905,9 @@ MonoBehaviour:
   snapTurnAngle: 45
   snapTurnCooldown: 0.5
   smoothTurnSpeed: 2
+  teleportMode: 0
+  movementSpeed: 20
+  teleportationDistance: 6
 --- !u!1 &1596566706
 GameObject:
   m_ObjectHideFlags: 0

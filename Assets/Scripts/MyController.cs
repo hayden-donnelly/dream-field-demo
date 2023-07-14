@@ -18,52 +18,99 @@ namespace LAI.XR
         private const string rightHandName = "RightHand";
         [SerializeField] private GameObject origin;
         private Transform originTransform;
+        private MyXROrigin xrOrigin;
         [Header("Turning")]
         [SerializeField] private bool snapTurn = true;
         [SerializeField] private float snapTurnAngle = 45f;
-        [SerializeField] private float snapTurnCooldown = 0.5f;
-        private bool canSnapTurn = true;
+        [SerializeField] private float snapTurnCooldown = 0.2f;
+        private bool snapTurnCooledown = true;
         [SerializeField] private float smoothTurnSpeed = 60f;
         private bool isRotating = false;
         private Vector2 rotationInput;
+        [Header("Movement")]
+        [SerializeField] private bool teleportMode = true;
+        [SerializeField] private float movementSpeed = 1f;
+        [SerializeField] private float teleportationDistance = 6.0f;
+        private bool inTeleportContext = false;
 
         private void Start()
         {
             originTransform = origin.transform;
+            xrOrigin = origin.GetComponent<MyXROrigin>();
 
             string controllerName = 
                 (controllerType == ControllerType.Left) ? leftHandName : rightHandName;
             InputActionMap handBase = actionAsset.FindActionMap("XRI " + controllerName);
             handBase.Enable();
+            InputActionMap locomotion = 
+                actionAsset.FindActionMap("XRI " + controllerName + " Locomotion");
+            locomotion.Enable();
+            InputActionMap interaction = 
+                actionAsset.FindActionMap("XRI " + controllerName + " Interaction");
+            interaction.Enable();
 
+            SetHandPositionCallback(handBase);
+            SetHandRotationCallback(handBase);
+
+            if(controllerType == ControllerType.Right) { SetTurnCallback(locomotion); }
+            else if(controllerType == ControllerType.Left)
+            {
+                if(teleportMode) { SetTeleportCallback(interaction); }
+                else { SetMoveCallback(locomotion); }
+            }
+        }
+
+        private void SetHandPositionCallback(InputActionMap handBase)
+        {
             InputAction positionAction = handBase.FindAction("Position");
             positionAction.performed += context => 
             { 
                 UpdateHandPosition(context.ReadValue<Vector3>()); 
             };
+        }
+
+        private void SetHandRotationCallback(InputActionMap handBase)
+        {
             InputAction rotationAction = handBase.FindAction("Rotation");
             rotationAction.performed += context => 
             { 
                 UpdateHandRotation(context.ReadValue<Quaternion>()); 
             };
+        }
 
-            InputActionMap locomotion = 
-                actionAsset.FindActionMap("XRI " + controllerName + " Locomotion");
-            locomotion.Enable();
-            if(controllerType == ControllerType.Right)
-            {
-                InputAction turn = locomotion.FindAction("Turn");
-                turn.performed += context => 
-                { 
-                    rotationInput = context.ReadValue<Vector2>();
-                    isRotating = true;
-                };
-                turn.canceled += context => 
-                { 
-                    rotationInput = Vector2.zero;
-                    isRotating = false;
-                };
-            }
+        private void SetTurnCallback(InputActionMap locomotion)
+        {
+            InputAction turn = locomotion.FindAction("Turn");
+            turn.performed += context => 
+            { 
+                rotationInput = context.ReadValue<Vector2>();
+                isRotating = true;
+            };
+            turn.canceled += context => 
+            { 
+                rotationInput = Vector2.zero;
+                isRotating = false;
+            };
+        }
+
+        private void SetTeleportCallback(InputActionMap interaction)
+        {
+            InputAction teleportContext = interaction.FindAction("Select");
+            teleportContext.performed += context => { inTeleportContext = true; };
+            teleportContext.canceled += context => { inTeleportContext = false; };
+            
+            InputAction teleport = interaction.FindAction("Activate");
+            teleport.performed += context => { Teleport(); };
+        }
+
+        private void SetMoveCallback(InputActionMap locomotion)
+        {
+            InputAction movement = locomotion.FindAction("Move");
+            movement.performed += context => 
+            { 
+                Vector2 movementInput = context.ReadValue<Vector2>();
+                Move(movementInput);
+            };
         }
 
         private void Update()
@@ -87,7 +134,7 @@ namespace LAI.XR
 
         private void SnapRotateBody(Vector2 rotationInput)   
         {
-            if(!canSnapTurn) { return; }
+            if(!snapTurnCooledown) { return; }
             if(rotationInput.x > 0) { originTransform.Rotate(0, snapTurnAngle, 0); }
             else if(rotationInput.x < 0) { originTransform.Rotate(0, -snapTurnAngle, 0); }
             StartCoroutine(SnapTurnCooldown());
@@ -95,15 +142,31 @@ namespace LAI.XR
 
         private IEnumerator SnapTurnCooldown()
         {
-            canSnapTurn = false;
+            snapTurnCooledown = false;
             yield return new WaitForSeconds(snapTurnCooldown);
-            canSnapTurn = true;
+            snapTurnCooledown = true;
         }
 
         private void SmoothRotateBody(Vector2 rotationInput)   
         {
             float yRotation = rotationInput.x * smoothTurnSpeed * Time.deltaTime;
             originTransform.Rotate(0, yRotation, 0);
+        }
+
+        private void Teleport()
+        {
+            if(!inTeleportContext) { return; }
+            Vector3 cameraForward = xrOrigin.XRCamera.transform.forward;
+            cameraForward.y = 0;
+            originTransform.position += cameraForward * teleportationDistance;
+        }
+
+        private void Move(Vector2 movementInput)
+        {
+            Vector3 originForward = originTransform.forward;
+            Vector3 originRight = originTransform.right;
+            Vector3 movement = originForward * movementInput.y + originRight * movementInput.x;
+            originTransform.Translate(movement * movementSpeed * Time.deltaTime);
         }
     }
 }
