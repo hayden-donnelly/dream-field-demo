@@ -11,6 +11,9 @@ Large language models are impressive, but they are stuck inside a chat box that 
 ### 3. Productivity
 Education and communication set the stage for our most important objective: productivity. By providing these pillars, Dream Field aims to accelerate technological innovation and scientific discovery. By working inside Dream Field, we will be able to understand problems in a whole new light and iterate on solutions faster than ever before.
 
+## Attributions
+- [The King´s Hall](https://sketchfab.com/3d-models/the-king-s-hall-d18155613363445b9b68c0c67196d98d) by [Skokloster Castle (Skoklosters slott)](https://sketchfab.com/SkoklosterCastle) licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/)
+
 ## Screenshots
 ![screenshot_01](./Images/dream-field-screenshot-01.png)
 ![screenshot_02](./Images/dream-field-screenshot-02.png)
