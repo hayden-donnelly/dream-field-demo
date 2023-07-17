@@ -15,6 +15,6 @@ Education and communication set the stage for our most important objective: prod
 - [The King´s Hall](https://sketchfab.com/3d-models/the-king-s-hall-d18155613363445b9b68c0c67196d98d) by [Skokloster Castle (Skoklosters slott)](https://sketchfab.com/SkoklosterCastle) licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/)
 
 ## Screenshots
-![screenshot_01](./Images/dream-field-screenshot-01.png)
-![screenshot_02](./Images/dream-field-screenshot-02.png)
-![screenshot_03](./Images/dream-field-screenshot-03.png)
+![screenshot_01](./Images/lobbyscreenshot.png)
+![screenshot_02](./Images/spacescreenshot.png)
+![screenshot_03](./Images/kingshallscreenshot.jpg)
