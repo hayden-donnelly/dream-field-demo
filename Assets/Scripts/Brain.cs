@@ -20,7 +20,8 @@ public class Brain
         sceneNames = new Dictionary<int, string>()
         {
             { 1, "Space" },
-            { 2, "Lobby" }
+            { 2, "Lobby" },
+            { 3, "KingsHall"}
         };
     }
 
