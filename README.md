@@ -1,6 +1,10 @@
 # dream-field-demo
 Dream Field is a place where humans and AI can interact in previously impossible ways. In this place, they can learn from each other, and together, strive to create a better world. This is a demo of the Dream Field concept.
 
+## Demo Videos
+- [Video 1](https://youtu.be/Ozn3RVhMrf0)
+- [Video 2](https://youtu.be/uKsyAiO4TM8)
+
 ## Core Objectives
 ### 1. Education
 AI and virtual reality will revolutionize education as we know it. Dream Field sits at the intersection of these technologies and aims to make education faster, more immersive, and more accessible than ever before. Students will no longer read about far away places and abstract concepts, they will experience them. On a wim they will be able to travel to the bottom of the ocean, or to the surface of Mars. They will be able to see the world through the eyes of famous historical figures, and witness firsthand the decisions that have shaped the world we live in. All of this, made possible by generative AI, and enhanced by virtual reality.
